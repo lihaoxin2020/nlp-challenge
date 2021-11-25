@@ -1,17 +1,17 @@
 import torch
 import torch.nn as nn
 
-class classifier(nn.Module):
+class Classifier(nn.Module):
     
     #define all the layers used in model
     def __init__(self, vocab_size, embedding_dim, hidden_dim, output_dim, n_layers, 
-                 bidirectional, dropout):
+                 bidirectional, dropout, pad_idx):
         
         #Constructor
         super().__init__()          
         
         #embedding layer
-        self.embedding = nn.Embedding(vocab_size, embedding_dim)
+        self.embedding = nn.Embedding(vocab_size, embedding_dim, padding_idx=pad_idx)
         
         #lstm layer
         self.lstm = nn.LSTM(embedding_dim, 
@@ -25,7 +25,7 @@ class classifier(nn.Module):
         self.fc = nn.Linear(hidden_dim * 2, output_dim)
         
         #activation function
-        self.act = nn.Sigmoid()
+        # self.act = nn.Sigmoid()
         
     def forward(self, text, text_lengths):
         
@@ -34,7 +34,7 @@ class classifier(nn.Module):
         #embedded = [batch size, sent_len, emb dim]
       
         #packed sequence
-        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths,batch_first=True)
+        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths.cpu(),batch_first=True)
         
         packed_output, (hidden, cell) = self.lstm(packed_embedded)
         #hidden = [batch size, num layers * num directions,hid dim]
@@ -47,6 +47,6 @@ class classifier(nn.Module):
         dense_outputs=self.fc(hidden)
 
         #Final activation function
-        outputs=self.act(dense_outputs)
+        # outputs=self.act(dense_outputs)
         
-        return outputs
+        return dense_outputs

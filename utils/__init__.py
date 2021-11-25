@@ -1,2 +1,2 @@
-from .model import classifier
+from .model import Classifier
 # from .utils import
