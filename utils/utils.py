@@ -1,4 +1,3 @@
-from numpy.lib.function_base import select
 from torch.utils.data import Dataset
 from torchtext.legacy import data
 import random
@@ -52,18 +51,26 @@ class BasicDataset(Dataset):
                 else:
                     self.data.append((false + true).lower())
                     self.label.append(1)
-                # print("Finishing ", i)
-                # i += 1
-                
-        
-        # def yield_tokens(file_path):
-        #     with open(file_path, encoding = 'ascii') as f:
-        #         for line in f:
-        #             yield line.lower().strip().split()
-        
-        # self.vocab = build_vocab_from_iterator(yield_tokens(data_path), specials=["<unk>"])
-        # self.vocab = build_vocab_from_iterator(yield_tokens(data_path))
-        # self.vocab = None
+
+    def __getitem__(self, index):
+        return self.data[index], self.label[index]
+
+    def get_pairs(self):
+        return [(self.data[i], self.label[i]) for i in range(len(self.data))]
+    
+    def __len__(self):
+        return len(self.data)
+
+class TextGenDataset(Dataset):
+    def __init__(self, data_path) -> None:
+        self.data = []
+        self.label = []
+        with open(data_path, encoding="ascii", errors="ignore") as data:
+            for line in data:
+                true, false = line.split('\t')
+                false = false[:-1]
+                self.data.append(true)
+                self.label.append(false)
 
     def __getitem__(self, index):
         return self.data[index], self.label[index]
