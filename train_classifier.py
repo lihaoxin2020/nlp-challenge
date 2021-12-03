@@ -3,15 +3,13 @@ from numpy.lib.function_base import average
 import torch
 import torch.nn as nn
 import torchtext.legacy.data as lData
-from sklearn.model_selection import KFold
-import numpy as np
 import time
 import sys
 from tqdm import tqdm
 import wandb
 
 from utils.utils import BasicDataset, reset_weights
-from utils.utils import TextDataset
+from utils.utils import TextDataset, tokenizer, get_fold_data
 from utils.model import Classifier
 
 import datetime
@@ -29,26 +27,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message
 logger = logging.getLogger(__name__)
 
 wandb.init(project="TextClassifier_11.23")
-#%%
-def get_fold_data(train_ds, fields, num_folds=10):
-    """
-    More details about 'fields' are available at 
-    https://github.com/pytorch/text/blob/master/torchtext/datasets/imdb.py
-    """
-    
-    kf = KFold(n_splits=num_folds, shuffle=True)
-    train_data_arr = np.array(train_ds.examples)
 
-    for train_index, val_index in kf.split(train_data_arr):
-        yield(
-            TextDataset(train_data_arr[train_index], fields=fields),
-            TextDataset(train_data_arr[val_index], fields=fields),
-        )
-
-#%%
-# tokonize_method = 'basic_english'
-def tokenizer(word):
-    return list(word)
 #%%
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 k_folds = 10
@@ -72,6 +51,7 @@ TEXT.build_vocab(train_ds)
 LABEL.build_vocab(train_ds)
 
 torch.save(TEXT.vocab, "./TEXT_vocab.pth")
+torch.save(LABEL.vocab, "./LABEL_vocab.pth")
 
 INPUT_DIM = len(TEXT.vocab)
 EMBEDDING_DIM = 100
@@ -197,13 +177,13 @@ for fold, (train_data, val_data) in enumerate(get_fold_data(train_ds, fields)):
     # print('val: ', len(val_data))
 
     model = Classifier(INPUT_DIM, 
-                   EMBEDDING_DIM, 
-                   HIDDEN_DIM, 
-                   OUTPUT_DIM, 
-                   N_LAYERS, 
-                   BIDIRECTIONAL, 
-                   DROPOUT, 
-                   PAD_IDX)
+                       EMBEDDING_DIM, 
+                       HIDDEN_DIM, 
+                       OUTPUT_DIM, 
+                       N_LAYERS, 
+                       BIDIRECTIONAL, 
+                       DROPOUT, 
+                       PAD_IDX)
     
     model.apply(reset_weights)
     model.to(device)
@@ -248,10 +228,5 @@ for fold, (train_data, val_data) in enumerate(get_fold_data(train_ds, fields)):
     logger.info('***** Cross Validation Result *****')
     logger.info(f'LOSS: {average(loss)}, ACC: {average(acc)}')
     logger.info(f'VAL LOSS: {average(val_loss)}, VAL ACC: {average(val_acc)}')
-
-
-# %%
-
-# %%
 
 # %%

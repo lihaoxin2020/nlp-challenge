@@ -112,3 +112,10 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Logging
+*.txt
+*.pth
+wandb/
+challenge-data-20211129T080744Z-001.zip
+
