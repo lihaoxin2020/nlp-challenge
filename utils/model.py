@@ -30,14 +30,14 @@ class Classifier(nn.Module):
         #activation function
         # self.act = nn.Sigmoid()
         
-    def forward(self, text, text_lengths):
+    def forward(self, text, text_lengths, train=True):
         
         #text = [batch size,sent_length]
         embedded = self.embedding(text)
         #embedded = [batch size, sent_len, emb dim]
       
         #packed sequence
-        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths.cpu(),batch_first=True)
+        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths.cpu(),batch_first=True, enforce_sorted=train)
         
         packed_output, (hidden, cell) = self.lstm(packed_embedded)
         #hidden = [batch size, num layers * num directions,hid dim]

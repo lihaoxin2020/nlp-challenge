@@ -58,30 +58,11 @@ class BasicDataset(Dataset):
         return self.data[index], self.label[index]
 
     def get_pairs(self):
-        return [(self.data[i], self.label[i]) for i in range(len(self.data))]
+        return [self.data[i] for i in range(len(self.data))]
     
     def __len__(self):
         return len(self.data)
-
-class TestDataset(Dataset):
-    def __init__(self, data_path) -> None:
-        self.data = []
-        self.label = []
-        with open(data_path, encoding="ascii", errors="ignore") as data:
-            for line in data:
-                true, false = line.split('\t')
-                false = false[:-1]
-                self.data.append((true + false).lower())
-                self.label.append(0)
-
-    def __getitem__(self, index):
-        return self.data[index]
-
-    def get_pairs(self):
-        return [(self.data[i], self.label[i]) for i in range(len(self.data))]
-    
-    def __len__(self):
-        return len(self.data)
+        
 class TextGenDataset(Dataset):
     def __init__(self, data_path) -> None:
         self.data = []
@@ -102,13 +83,44 @@ class TextGenDataset(Dataset):
     def __len__(self):
         return len(self.data)
 
+class TestDataset(Dataset):
+    def __init__(self, data_path) -> None:
+        self.data = []
+        # self.label = []
+        with open(data_path, encoding="ascii", errors="ignore") as data:
+            for line in data:
+                true, false = line.split('\t')
+                false = false[:-1]
+                self.data.append((true + false).lower())
+                # self.label.append(0)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def get_data(self):
+        return [(self.data[i], None) for i in range(len(self.data))]
+    
+    def __len__(self):
+        return len(self.data)
+
+class TestTextDataset(Dataset):
+    def __init__(self, data_path) -> None:
+        self.data = []
+        with open(data_path, encoding="ascii", errors="ignore") as data:
+            for line in data:
+                true, _ = line.split('\t')
+                self.data.append(true)
+
+    def __getitem__(self, index):
+        return self.data[index]
+
+    def get_data(self):
+        return [(self.data[i], None) for i in range(len(self.data))]
+    
+    def __len__(self):
+        return len(self.data)   
 
 def get_fold_data(train_ds, fields, num_folds=10):
-    """
-    More details about 'fields' are available at 
-    https://github.com/pytorch/text/blob/master/torchtext/datasets/imdb.py
-    """
-    
     kf = KFold(n_splits=num_folds, shuffle=True)
     train_data_arr = np.array(train_ds.examples)
 

@@ -118,4 +118,6 @@ dmypy.json
 *.pth
 wandb/
 challenge-data-20211129T080744Z-001.zip
-
+*.docx
+*.pdf
+*.zip
